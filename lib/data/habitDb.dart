@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:habit_tracker/functions/dateTime.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -100,6 +102,17 @@ class HabitDatabase {
 
       heatMapDataSet.addEntries(percentForEachDay.entries);
       print(heatMapDataSet);
+    }
+  }
+
+  void populateHeatMapDataSet() {
+    Random random = Random();
+    DateTime today = DateTime.now();
+
+    for (int i = 0; i < 10; i++) {
+      DateTime date = today.subtract(Duration(days: i + 1));
+      int value = 2 + random.nextInt(9); // Values between 2 and 10
+      heatMapDataSet[date] = value;
     }
   }
 }

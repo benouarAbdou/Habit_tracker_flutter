@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/components/habitTile.dart';
 import 'package:habit_tracker/components/monthSummary.dart';
@@ -21,7 +23,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
+      title: 'Habit tracker',
       theme: ThemeData(useMaterial3: false, primarySwatch: Colors.green),
       home: const HomePage(),
     );
@@ -45,6 +48,7 @@ class _HomePageState extends State<HomePage> {
     // then create default data
     if (_myBox.get("CURRENT_HABIT_LIST") == null) {
       db.createDefaultData();
+      //db.populateHeatMapDataSet();
     }
 
     // there already exists data, this is not the first time
@@ -139,34 +143,161 @@ class _HomePageState extends State<HomePage> {
     db.updateDatabase();
   }
 
+  // Function to calculate the longest streak
+  int calculateStreak() {
+    int longestStreak = 0;
+    int currentStreak = 0;
+
+    // Iterate through the heatMapDataSet to find the longest streak
+    DateTime today = DateTime.now();
+    List<DateTime> dates = db.heatMapDataSet.keys.toList();
+    dates.sort();
+
+    for (var date in dates) {
+      if (db.heatMapDataSet[date]! > 0) {
+        currentStreak++;
+        if (currentStreak > longestStreak) {
+          longestStreak = currentStreak;
+        }
+      } else {
+        currentStreak = 0;
+      }
+    }
+
+    return longestStreak;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[300],
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      backgroundColor: Colors.black,
       floatingActionButton: MyFloatingActionButton(onPressed: createNewHabit),
-      body: ListView(
-        children: [
-          // monthly summary heat map
-          MonthlySummary(
-            datasets: db.heatMapDataSet,
-            startDate: _myBox.get("START_DATE"),
-          ),
-          // list of habits
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: db.todaysHabitList.length,
-            itemBuilder: (context, index) {
-              return HabitTile(
-                habitName: db.todaysHabitList[index][0],
-                habitCompleted: db.todaysHabitList[index][1],
-                onChanged: (value) => checkBoxTapped(value, index),
-                settingsTapped: (context) => openHabitSettings(index),
-                deleteTapped: (context) => deleteHabit(index),
-              );
-            },
-          )
-        ],
+      body: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: ListView(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              child: const Text(
+                'Welecome back! 👋',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24),
+              ),
+            ),
+            // New Container with Image and Streak Info
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.green.withOpacity(0.5),
+                    Colors.transparent,
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.only(left: 20),
+                    child: Image.asset(
+                      'assets/target.png',
+                      width: 75,
+                      height: 75,
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  const Text(
+                    'Current Streak:',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    '${calculateStreak()} days',
+                    style: const TextStyle(
+                      color: Colors.green,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "🏆 Heat map",
+                  style: TextStyle(color: Colors.grey[500], fontSize: 16),
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                Expanded(
+                    child: Container(
+                  height: 1,
+                  color: Colors.grey[500],
+                ))
+              ],
+            ),
+
+            // Monthly summary heat map
+            MonthlySummary(
+              datasets: db.heatMapDataSet,
+              startDate: _myBox.get("START_DATE"),
+            ),
+
+            const SizedBox(
+              height: 10,
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "🎯 Habits",
+                  style: TextStyle(color: Colors.grey[500], fontSize: 16),
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                Expanded(
+                    child: Container(
+                  height: 1,
+                  color: Colors.grey[500],
+                ))
+              ],
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+
+            // list of habits
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: db.todaysHabitList.length,
+              itemBuilder: (context, index) {
+                return HabitTile(
+                  habitName: db.todaysHabitList[index][0],
+                  habitCompleted: db.todaysHabitList[index][1],
+                  onChanged: (value) => checkBoxTapped(value, index),
+                  settingsTapped: (context) => openHabitSettings(index),
+                  deleteTapped: (context) => deleteHabit(index),
+                );
+              },
+            )
+          ],
+        ),
       ),
     );
   }
