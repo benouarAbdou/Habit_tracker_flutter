@@ -143,13 +143,36 @@ class _HomePageState extends State<HomePage> {
     db.updateDatabase();
   }
 
+  int calculateCurrentStreak() {
+    int currentStreak = 0;
+    DateTime today = DateTime.now();
+    DateTime currentDate = DateTime(today.year, today.month, today.day);
+
+    if (db.heatMapDataSet.containsKey(currentDate) &&
+        db.heatMapDataSet[currentDate]! > 0) {
+      currentStreak++;
+    } else {
+      return currentStreak;
+    }
+
+    while (true) {
+      currentDate = currentDate.subtract(const Duration(days: 1));
+      if (db.heatMapDataSet.containsKey(currentDate) &&
+          db.heatMapDataSet[currentDate]! > 0) {
+        currentStreak++;
+      } else {
+        break;
+      }
+    }
+
+    return currentStreak;
+  }
+
   // Function to calculate the longest streak
-  int calculateStreak() {
+  int calculateLongestStreak() {
     int longestStreak = 0;
     int currentStreak = 0;
 
-    // Iterate through the heatMapDataSet to find the longest streak
-    DateTime today = DateTime.now();
     List<DateTime> dates = db.heatMapDataSet.keys.toList();
     dates.sort();
 
@@ -212,22 +235,55 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   const SizedBox(width: 20),
-                  const Text(
-                    'Current Streak:',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
                   const SizedBox(width: 10),
-                  Text(
-                    '${calculateStreak()} days',
-                    style: const TextStyle(
-                      color: Colors.green,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            const TextSpan(
+                              text: 'Max Streak: ',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            TextSpan(
+                              text: '${calculateLongestStreak()} days',
+                              style: const TextStyle(
+                                color: Colors.green,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            const TextSpan(
+                              text: 'Current Streak: ',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            TextSpan(
+                              text: '${calculateCurrentStreak()} days',
+                              style: const TextStyle(
+                                color: Colors.green,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
                   ),
                 ],
               ),
