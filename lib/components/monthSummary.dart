@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
-import 'package:habit_tracker/functions/dateTime.dart';
 
 class MonthlySummary extends StatelessWidget {
   final Map<DateTime, int>? datasets;
@@ -16,9 +15,8 @@ class MonthlySummary extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       child: HeatMap(
-        startDate:
-            createDateTimeObject(startDate).subtract(const Duration(days: 0)),
-        endDate: DateTime.now().add(const Duration(days: 56)),
+        startDate: DateTime.now().subtract(const Duration(days: 28)),
+        endDate: DateTime.now().add(const Duration(days: 28)),
         datasets: datasets,
         colorMode: ColorMode.color,
         defaultColor: Colors.white,
